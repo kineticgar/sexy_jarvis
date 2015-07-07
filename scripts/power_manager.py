@@ -23,6 +23,8 @@
 #
 ################################################################################
 
+from wakeonlan import wol
+
 import rospy
 
 from std_srvs.srv import Empty
@@ -31,7 +33,8 @@ from sexy_jarvis.srv import WakeOnLan
 from sexy_jarvis.srv import WakeOnLanResponse
 
 def handle_wake_on_lan(req):
-    rospy.logdebug('TODO: Waking up %s', req.mac_address)
+    rospy.logdebug('Waking up %s', req.mac_address)
+    wol.send_magic_packet(req.mac_address)
     return WakeOnLanResponse()
 
 def handle_power_on(req):

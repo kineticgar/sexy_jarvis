@@ -16,7 +16,7 @@ catkin_init_workspace
 Sexy jarvis depends on the following packages:
 
 ```shell
-git clone https://github.com/garbear/sexy_jarvis.git
+git clone --recursive https://github.com/garbear/sexy_jarvis.git
 git clone --recursive https://github.com/garbear/motion_tracker.git
 git clone https://github.com/ros-drivers/gscam.git
 ```

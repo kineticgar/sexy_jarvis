@@ -1,0 +1,3 @@
+[submodule "modules/pywakeonlan"]
+	path = modules/pywakeonlan
+	url = https://github.com/remcohaszing/pywakeonlan.git
