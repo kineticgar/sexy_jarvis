@@ -30,72 +30,153 @@ import subprocess
 
 from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
+from sexy_jarvis.srv import StartCamera
+from sexy_jarvis.srv import StartCameraResponse
 from sexy_jarvis.srv import WakeOnLan
 from sexy_jarvis.srv import WakeOnLanResponse
 
-class Computer(object):
-    ip_address  = None
-    mac_address = None
-    camera      = '/dev/video0'
-    camera_fps  = '30/1' # GStreamer framerate needs to be an integral fraction
+################################################################################
+#
+# Globals
+#
+################################################################################
 
-    def __init__(self, ip_address, mac_address, camera, camera_fps):
-        self.ip_address  = ip_address
+NODE_NAME = 'power_manager'
+
+################################################################################
+#
+# Computer properties
+#
+################################################################################
+
+class Computer(object):
+    host_name  = None
+    ip_address = None
+
+    def __init__(self, host_name, ip_address):
+        self.host_name  = host_name
+        self.ip_address = ip_address
+
+    @staticmethod
+    def FromParams(host_name, params):
+        computer = None
+        if 'ip_address' not in params:
+            rospy.logdebug('Machine %s has no parameter "ip_address"', host_name)
+        else:
+            computer = Computer(host_name, params['ip_address'])
+        return computer
+
+class NetworkComputer(Computer):
+    mac_address = None
+
+    def __init__(self, host_name, ip_address, mac_address):
+        super(NetworkComputer, self).__init__(host_name, ip_address)
         self.mac_address = mac_address
-        self.camera      = camera
-        self.camera_fps  = camera_fps
+
+    @staticmethod
+    def FromParams(host_name, params):
+        computer = None
+        base = Computer.FromParams(host_name, params)
+        if base:
+            if 'mac_address' not in params:
+                rospy.logdebug('Machine %s has no parameter "mac_address"', base.host_name)
+            else:
+                computer = NetworkComputer(base.host_name,
+                                           base.ip_address,
+                                           params['mac_address'])
+        return computer
+
+class CameraComputer(Computer):
+    camera     = None
+    camera_fps = None
+
+    def __init__(self, host_name, ip_address, camera, camera_fps):
+        super(CameraComputer, self).__init__(host_name, ip_address)
+        self.camera     = camera
+        self.camera_fps = camera_fps
+
+    @staticmethod
+    def FromParams(host_name, params):
+        computer = None
+        base = Computer.FromParams(host_name, params)
+        if base:
+            if 'camera' not in params:
+                rospy.logdebug('Machine %s has no parameter "camera"', base.host_name)
+            elif 'camera_fps' not in params:
+                rospy.logdebug('Machine %s has no parameter "camera_fps"', base.host_name)
+            else:
+                computer = CameraComputer(base.host_name,
+                                          base.ip_address,
+                                          params['camera'],
+                                          params['camera_fps'])
+        return computer
+
+################################################################################
+#
+# service handlers
+#
+################################################################################
 
 def handle_wake_on_lan(req):
     machines = rospy.get_param('machines')
-    try:
-        mac_address = machines[req.machine_name]['mac_address']
-        rospy.logdebug('Waking up %s by mac address %s', req.machine_name, mac_address)
-        wol.send_magic_packet(mac_address)
-    except KeyError:
-        rospy.logerr('Can\'t get mac address for machine "%s"' % req.machine_name)
+    if req.machine_name not in machines:
+        rospy.logerror('No parameters found for machine "%s"', req.machine_name)
+    else:
+        rospy.logdebug('Waking up %s', req.machine_name)
+        computer = NetworkComputer.FromParams(req.machine_name, machines[req.machine_name])
+        if computer:
+            wol.send_magic_packet(computer.mac_address)
     return WakeOnLanResponse()
+
+def handle_start_camera(req):
+    machines = rospy.get_param('machines')
+    if req.machine_name not in machines:
+        rospy.logerror('No parameters found for machine "%s"', req.machine_name)
+    else:
+        rospy.logdebug('Starting image pipeline for %s', req.machine_name)
+        computer = CameraComputer.FromParams(req.machine_name, machines[req.machine_name])
+        if computer:
+            subprocess.Popen(['roslaunch',
+                              'sexy_jarvis',
+                              'camera.launch',
+                              'NAMESPACE:=%s' % rospy.get_namespace(),
+                              'MACHINE:=%s' % computer.host_name,
+                              'MACHINE_IP:=%s' % computer.ip_address,
+                              'DEVICE:=%s' % computer.camera,
+                              'FPS:=%s' % computer.camera_fps])
+    return StartCameraResponse()
 
 def handle_power_on(req):
     rospy.logdebug('Turning power on')
-    try:
-        wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
-        machines = rospy.get_param('machines')
-        for machine in machines:
-            wake_on_lan(machine)
-
-            computer = None
+    wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
+    start_camera = rospy.ServiceProxy('start_camera', StartCamera)
+    machines = rospy.get_param('machines')
+    for machine_name in machines:
+        computer = Computer.FromParams(machine_name, machines[machine_name])
+        if computer:
             try:
-                computer = Computer(machines[machine]['ip_address'],
-                                    machines[machine]['mac_address'],
-                                    machines[machine]['camera'],
-                                    machines[machine]['camera_fps'])
-            except KeyError:
-                rospy.logerr('Can\'t get properties for machine %s', machine)
-
-            if computer:
-                rospy.logdebug('Starting image pipeline for %s', machine)
-                subprocess.Popen(['roslaunch',
-                                  'sexy_jarvis',
-                                  'camera.launch',
-                                  'NAMESPACE:=%s' % rospy.get_namespace(),
-                                  'MACHINE:=%s' % machine,
-                                  'MACHINE_IP:=%s' % computer.ip_address,
-                                  'DEVICE:=%s' % computer.camera,
-                                  'FPS:=%s' % computer.camera_fps])
-
-    except rospy.ServiceException, e:
-        rospy.logerr('Service call failed: %s', e)
+                wake_on_lan(computer.host_name)
+                start_camera(computer.host_name)
+            except rospy.ServiceException as e:
+                rospy.logerr('Service call failed: %s', e)
     return EmptyResponse()
 
 def handle_power_off(req):
     rospy.logdebug('TODO: Turning power off')
     return EmptyResponse()
 
+################################################################################
+#
+# power_manager() - node entry point
+#
+################################################################################
+
 def power_manager():
-    rospy.init_node('power_manager', log_level=rospy.DEBUG)
-    wake_on_lan_service = rospy.Service('wake_on_lan', WakeOnLan, handle_wake_on_lan)
-    power_on_service    = rospy.Service('power_on',    Empty,     handle_power_on)
-    power_off_service   = rospy.Service('power_off',   Empty,     handle_power_off)
+    rospy.init_node(NODE_NAME, log_level=rospy.DEBUG)
+    wake_on_lan_service  = rospy.Service('wake_on_lan',  WakeOnLan,   handle_wake_on_lan)
+    start_camera_service = rospy.Service('start_camera', StartCamera, handle_start_camera)
+    power_on_service     = rospy.Service('power_on',     Empty,       handle_power_on)
+    power_off_service    = rospy.Service('power_off',    Empty,       handle_power_off)
     rospy.logdebug('Power manager started')
     rospy.spin()
 
