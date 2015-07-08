@@ -1,11 +1,16 @@
 <launch>
+  <!-- Top-level namespace to run under -->
   <arg name="NAMESPACE" default="sexy_jarvis"/>
 
   <group ns="$(arg NAMESPACE)">
-    <rosparam command="load" param="machines" file="$(find sexy_jarvis)/config/machines.yaml" />
 
-    <node pkg="sexy_jarvis" type="power_manager.py" name="power_manager"/>
-    <node pkg="sexy_jarvis" type="main.py" name="main"/>
+    <!-- Load machine parameters -->
+    <rosparam command="load" param="machines" file="$(find sexy_jarvis)/config/machines.yaml"/>
+
+    <!-- Run nodes -->
+    <node pkg="sexy_jarvis" type="power_manager.py" name="power_manager" output="screen"/>
+    <node pkg="sexy_jarvis" type="main.py" name="main" output="screen"/>
+
   </group>
 </launch>
 
