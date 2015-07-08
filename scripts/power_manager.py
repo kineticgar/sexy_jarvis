@@ -33,6 +33,18 @@ from std_srvs.srv import EmptyResponse
 from sexy_jarvis.srv import WakeOnLan
 from sexy_jarvis.srv import WakeOnLanResponse
 
+class Computer(object):
+    ip_address  = None
+    mac_address = None
+    camera      = '/dev/video0'
+    camera_fps  = '30/1' # GStreamer framerate needs to be an integral fraction
+
+    def __init__(self, ip_address, mac_address, camera, camera_fps):
+        self.ip_address  = ip_address
+        self.mac_address = mac_address
+        self.camera      = camera
+        self.camera_fps  = camera_fps
+
 def handle_wake_on_lan(req):
     machines = rospy.get_param('machines')
     try:
@@ -50,20 +62,32 @@ def handle_power_on(req):
         machines = rospy.get_param('machines')
         for machine in machines:
             wake_on_lan(machine)
-            ip_address = None
+
+            computer = None
             try:
-                ip_address = machines[machine]['ip_address']
+                computer = Computer(machines[machine]['ip_address'],
+                                    machines[machine]['mac_address'],
+                                    machines[machine]['camera'],
+                                    machines[machine]['camera_fps'])
             except KeyError:
-                rospy.logerr('Can\'t get IP address for machine %s', machine)
-                continue
-            '''
-            subprocess.call(['roslaunch',
-                             'sexy_jarvis',
-                             'camera.launch',
-                             'NAMESPACE:=%s' % rospy.get_namespace(),
-                             'MACHINE:=%s' % machine,
-                             'MACHINE_IP:=%s' % ip_address])
-            '''
+                rospy.logerr('Can\'t get properties for machine %s', machine)
+
+            if computer:
+                rospy.logdebug('Starting image pipeline for %s', machine)
+                subprocess.call(['roslaunch',
+                                 'sexy_jarvis',
+                                 'camera.launch',
+                                 'NAMESPACE:=%s' % rospy.get_namespace(),
+                                 'MACHINE:=%s' % machine,
+                                 'MACHINE_IP:=%s' % computer.ip_address,
+                                 'DEVICE:=%s' % computer.camera,
+                                 'FPS:=%s' % computer.camera_fps])
+                subprocess.call(['roslaunch',
+                                 'sexy_jarvis',
+                                 'motion_tracker.launch',
+                                 'NAMESPACE:=%s' % rospy.get_namespace(),
+                                 'MACHINE:=%s' % machine])
+
     except rospy.ServiceException, e:
         rospy.logerr('Service call failed: %s', e)
     return EmptyResponse()
