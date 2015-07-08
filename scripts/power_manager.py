@@ -33,8 +33,13 @@ from sexy_jarvis.srv import WakeOnLan
 from sexy_jarvis.srv import WakeOnLanResponse
 
 def handle_wake_on_lan(req):
-    rospy.logdebug('Waking up %s', req.mac_address)
-    wol.send_magic_packet(req.mac_address)
+    machines = rospy.get_param('machines')
+    try:
+        mac_address = machines[req.machine_name]['mac_address']
+        rospy.logdebug('Waking up %s by mac address %s', req.machine_name, mac_address)
+        wol.send_magic_packet(mac_address)
+    except KeyError:
+        rospy.logerr('Can\'t get mac address for machine "%s"' % req.machine_name)
     return WakeOnLanResponse()
 
 def handle_power_on(req):

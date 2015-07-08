@@ -1,6 +1,10 @@
 <launch>
   <arg name="NAMESPACE" default="sexy_jarvis"/>
 
-  <node ns="$(arg NAMESPACE)" pkg="sexy_jarvis" type="power_manager.py" name="power_manager"/>
+  <group ns="$(arg NAMESPACE)">
+    <rosparam command="load" param="machines" file="$(find sexy_jarvis)/config/machines.yaml" />
+
+    <node pkg="sexy_jarvis" type="power_manager.py" name="power_manager"/>
+  </group>
 </launch>
 
