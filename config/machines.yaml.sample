@@ -1,8 +1,10 @@
 # Edit this file with machine names and mac addresses
 
 cpu1:
+  ip_address: "192.168.0.2"
   mac_address: "00:00:00:00:00:00"
 
 cpu2:
+  ip_address: "192.168.0.3"
   mac_address: "00:00:00:00:00:00"
 

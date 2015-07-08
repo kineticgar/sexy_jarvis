@@ -48,7 +48,10 @@ Make sure the following lines are included in `.bashrc`:
 ```shell
 source /opt/ros/jade/setup.bash
 source $HOME/ros_workspace/devel/setup.bash
+export ROSLAUNCH_SSH_UNKNOWN=1
 ```
+
+The `ROSLAUNCH_SSH_UNKNOWN=1` is recommended for network setups.
 
 # Running sexy jarvis
 
@@ -58,8 +61,10 @@ roslaunch sexy_jarvis main.launch
 
 # Running the camera driver
 
+The camera driver is meant to be launched from the main node instead of started manually. To launch the camaera driver manually, ssh into the computer and enter:
+
 ```shell
-roslaunch sexy_jarvis camera.launch
+roslaunch sexy_jarvis camera.launch NAMESPACE:=sexy_jarvis MACHINE:=$HOSTNAME MACHINE_IP:="127.0.0.1"
 ```
 
 If you get an error about permissions, try adding the current user to the video group.

@@ -26,6 +26,7 @@
 from wakeonlan import wol
 
 import rospy
+import subprocess
 
 from std_srvs.srv import Empty
 from std_srvs.srv import EmptyResponse
@@ -46,8 +47,18 @@ def handle_power_on(req):
     rospy.logdebug('Turning power on')
     try:
         wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
-        for machine in rospy.get_param('machines'):
+        machines = rospy.get_param('machines')
+        for machine in machines:
             wake_on_lan(machine)
+            try:
+                subprocess.call(['roslaunch',
+                                 'sexy_jarvis',
+                                 'camera.launch',
+                                 'NAMESPACE:=%s' % rospy.get_namespace(),
+                                 'MACHINE:=%s' % machine,
+                                 'MACHINE_IP:=%s' % machines[machine]['ip_address']])
+            except KeyError:
+                rospy.logerr('Can\'t get IP address for machine %s', machine)
     except rospy.ServiceException, e:
         rospy.logerr('Service call failed: %s', e)
     return EmptyResponse()
