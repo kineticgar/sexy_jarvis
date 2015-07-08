@@ -50,16 +50,19 @@ def handle_power_on(req):
         machines = rospy.get_param('machines')
         for machine in machines:
             wake_on_lan(machine)
-            '''
+            ip_address = None
             try:
-                subprocess.call(['roslaunch',
-                                 'sexy_jarvis',
-                                 'camera.launch',
-                                 'NAMESPACE:=%s' % rospy.get_namespace(),
-                                 'MACHINE:=%s' % machine,
-                                 'MACHINE_IP:=%s' % machines[machine]['ip_address']])
+                ip_address = machines[machine]['ip_address']
             except KeyError:
                 rospy.logerr('Can\'t get IP address for machine %s', machine)
+                continue
+            '''
+            subprocess.call(['roslaunch',
+                             'sexy_jarvis',
+                             'camera.launch',
+                             'NAMESPACE:=%s' % rospy.get_namespace(),
+                             'MACHINE:=%s' % machine,
+                             'MACHINE_IP:=%s' % ip_address])
             '''
     except rospy.ServiceException, e:
         rospy.logerr('Service call failed: %s', e)
