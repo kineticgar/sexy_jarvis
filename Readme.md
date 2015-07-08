@@ -25,7 +25,7 @@ Clone these packages into the `src` directory.
 
 # Building sexy jarvis
 
-Generate the user setup script. This will fail due to a missing dependency, but `catkin_make` will generate the setup script needed to install dependencies.
+Generate the user setup script. This will fail due to a missing dependency, but must be run first to generate the setup script needed to install dependencies.
 
 ```shell
 cd $HOME/ros_workspace
@@ -41,19 +41,19 @@ rosdep update
 rosdep install -y gscam
 ```
 
-Run `catkin_make` in the catkin workspace. This time it should succeed.
+Run `catkin_make` in the catkin workspace again. This time it should succeed.
 
-Add the following lines to `.bashrc`:
+Make sure the following lines are included in `.bashrc`:
 
 ```shell
 source /opt/ros/jade/setup.bash
 source $HOME/ros_workspace/devel/setup.bash
 ```
 
-Create a symlink to config folder for bgs configs
+# Running sexy jarvis
 
 ```shell
-ln -s src/motion_tracker/lib/bgslibrary/vs2010mfc/config config
+roslaunch sexy_jarvis main.launch
 ```
 
 # Running the camera driver
