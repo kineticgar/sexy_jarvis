@@ -1,0 +1,12 @@
+<launch>
+  <group ns="$(arg NAMESPACE)">
+    <group ns="$(arg MACHINE)">
+
+      <arg name="CONFIG_DIR" value="$(find motion_tracker)"/>
+
+      <node pkg="motion_tracker" type="motion_tracker" name="motion_tracker" args="$(arg CONFIG_DIR)" output="screen"/>
+
+    </group>
+  </group>
+</launch>
+
