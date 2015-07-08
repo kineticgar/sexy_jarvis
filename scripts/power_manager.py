@@ -74,19 +74,14 @@ def handle_power_on(req):
 
             if computer:
                 rospy.logdebug('Starting image pipeline for %s', machine)
-                subprocess.call(['roslaunch',
-                                 'sexy_jarvis',
-                                 'camera.launch',
-                                 'NAMESPACE:=%s' % rospy.get_namespace(),
-                                 'MACHINE:=%s' % machine,
-                                 'MACHINE_IP:=%s' % computer.ip_address,
-                                 'DEVICE:=%s' % computer.camera,
-                                 'FPS:=%s' % computer.camera_fps])
-                subprocess.call(['roslaunch',
-                                 'sexy_jarvis',
-                                 'motion_tracker.launch',
-                                 'NAMESPACE:=%s' % rospy.get_namespace(),
-                                 'MACHINE:=%s' % machine])
+                subprocess.Popen(['roslaunch',
+                                  'sexy_jarvis',
+                                  'camera.launch',
+                                  'NAMESPACE:=%s' % rospy.get_namespace(),
+                                  'MACHINE:=%s' % machine,
+                                  'MACHINE_IP:=%s' % computer.ip_address,
+                                  'DEVICE:=%s' % computer.camera,
+                                  'FPS:=%s' % computer.camera_fps])
 
     except rospy.ServiceException, e:
         rospy.logerr('Service call failed: %s', e)
