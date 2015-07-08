@@ -43,7 +43,13 @@ def handle_wake_on_lan(req):
     return WakeOnLanResponse()
 
 def handle_power_on(req):
-    rospy.logdebug('TODO: Turning power on')
+    rospy.logdebug('Turning power on')
+    try:
+        wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
+        for machine in rospy.get_param('machines'):
+            wake_on_lan(machine)
+    except rospy.ServiceException, e:
+        rospy.logerr('Service call failed: %s', e)
     return EmptyResponse()
 
 def handle_power_off(req):
