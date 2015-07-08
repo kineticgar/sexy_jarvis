@@ -5,6 +5,7 @@
     <rosparam command="load" param="machines" file="$(find sexy_jarvis)/config/machines.yaml" />
 
     <node pkg="sexy_jarvis" type="power_manager.py" name="power_manager"/>
+    <node pkg="sexy_jarvis" type="main.py" name="main"/>
   </group>
 </launch>
 
