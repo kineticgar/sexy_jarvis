@@ -28,6 +28,7 @@
 #include "XmlRpcValue.h"
 
 using namespace PLATFORM;
+using namespace XmlRpc;
 
 ImageMultiplexerNode::ImageMultiplexerNode(unsigned int width, unsigned int height) :
   m_multiplexer(width, height),
@@ -89,11 +90,34 @@ std::vector<std::string> ImageMultiplexerNode::GetMachineNames(void)
 {
   std::vector<std::string> names;
 
-  XmlRpc::XmlRpcValue machines;
-  if (m_node.getParam("machines", machines))
+  XmlRpcValue machines;
+  if (m_node.getParam("machines", machines) && machines.getType() == XmlRpcValue::TypeStruct)
   {
-    for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = machines.begin(); it != machines.end(); ++it)
-      names.push_back(it->first);
+    for (XmlRpcValue::ValueStruct::const_iterator it = machines.begin(); it != machines.end(); ++it)
+    {
+      const std::string& strComputer = it->first;
+      const XmlRpcValue& properties = it->second;
+
+      if (properties.getType() == XmlRpcValue::TypeStruct)
+      {
+        // Only get machines with cameras attached
+        bool bHasCamera = false;
+        for (XmlRpcValue::ValueStruct::const_iterator it2 = const_cast<XmlRpcValue&>(properties).begin();
+            it2 != const_cast<XmlRpcValue&>(properties).end();
+            ++it2)
+        {
+          const std::string& strProperty = it2->first;
+          const XmlRpcValue& value = it->second;
+          if (strProperty == "camera" && value.getType() == XmlRpcValue::TypeString)
+          {
+            bHasCamera = true;
+            break;
+          }
+        }
+        if (bHasCamera)
+          names.push_back(it->first);
+      }
+    }
   }
 
   return names;

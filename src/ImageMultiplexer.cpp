@@ -25,7 +25,7 @@
 ImageMultiplexer::ImageMultiplexer(unsigned int width, unsigned int height)
   : m_width(width),
     m_height(height),
-    m_image(cv::Mat::ones(height, width, CV_8U) * 3) // TODO
+    m_image(cv::Mat::zeros(height, width, CV_8UC3) + 0xff) // blue (BGR8)
 {
 }
 
