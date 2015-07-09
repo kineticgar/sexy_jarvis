@@ -1,3 +1,6 @@
 [submodule "modules/pywakeonlan"]
 	path = modules/pywakeonlan
 	url = https://github.com/remcohaszing/pywakeonlan.git
+[submodule "lib/platform"]
+	path = lib/platform
+	url = https://github.com/Pulse-Eight/platform.git
