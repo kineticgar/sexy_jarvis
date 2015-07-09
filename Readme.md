@@ -18,6 +18,7 @@ Sexy jarvis depends on the following packages:
 ```shell
 git clone --recursive https://github.com/garbear/sexy_jarvis.git
 git clone --recursive https://github.com/garbear/motion_tracker.git
+git clone --recursive https://github.com/garbear/libplatform.git
 git clone https://github.com/ros-drivers/gscam.git
 ```
 

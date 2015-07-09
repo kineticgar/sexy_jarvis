@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(sexy_jarvis)
 
-add_subdirectory(lib/platform)
-
 list(APPEND CMAKE_CXX_FLAGS "-std=c++0x")
 
 ## Find catkin macros and libraries
@@ -12,6 +10,7 @@ list(APPEND CMAKE_CXX_FLAGS "-std=c++0x")
 set(MSG_DEP_SET std_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
+  libplatform
   cv_bridge
   image_transport
   roscpp
@@ -91,7 +90,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
   ${catkin_INCLUDE_DIRS}
-  lib/platform/src
 )
 
 ## Declare a cpp library
@@ -112,5 +110,5 @@ add_executable(image_mutliplexer src/image_multiplexer.cpp
 ## Specify libraries to link a library or executable target against
 target_link_libraries(image_mutliplexer
   ${catkin_LIBRARIES}
-  platform
 )
+
