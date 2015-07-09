@@ -150,14 +150,20 @@ def handle_start_camera(req):
 
 def handle_power_on(req):
     rospy.logdebug('Turning power on')
-    wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
-    start_camera = rospy.ServiceProxy('start_camera', StartCamera)
     machines = rospy.get_param('machines')
+    wake_on_lan = rospy.ServiceProxy('wake_on_lan', WakeOnLan)
     for machine_name in machines:
-        computer = Computer.FromParams(machine_name, machines[machine_name])
+        computer = NetworkComputer.FromParams(machine_name, machines[machine_name])
         if computer:
             try:
                 wake_on_lan(computer.host_name)
+            except rospy.ServiceException as e:
+                rospy.logerr('Service call failed: %s', e)
+    start_camera = rospy.ServiceProxy('start_camera', StartCamera)
+    for machine_name in machines:
+        computer = CameraComputer.FromParams(machine_name, machines[machine_name])
+        if computer:
+            try:
                 start_camera(computer.host_name)
             except rospy.ServiceException as e:
                 rospy.logerr('Service call failed: %s', e)
