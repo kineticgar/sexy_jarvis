@@ -42,6 +42,7 @@ from sexy_jarvis.srv import WakeOnLanResponse
 ################################################################################
 
 NODE_NAME = 'power_manager'
+USE_SSH = False  # TODO: Enable when ssh is working
 
 ################################################################################
 #
@@ -143,7 +144,8 @@ def handle_start_camera(req):
                               'MACHINE:=%s' % computer.host_name,
                               'MACHINE_IP:=%s' % computer.ip_address,
                               'DEVICE:=%s' % computer.camera,
-                              'FPS:=%s' % computer.camera_fps])
+                              'FPS:=%s' % computer.camera_fps,
+                              'DRIVER:=%d' % (1 if USE_SSH else 0)])
     return StartCameraResponse()
 
 def handle_power_on(req):

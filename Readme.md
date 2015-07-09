@@ -64,7 +64,7 @@ roslaunch sexy_jarvis main.launch
 The camera driver is meant to be launched from the main node instead of started manually. To launch the camaera driver manually, ssh into the computer and enter:
 
 ```shell
-roslaunch sexy_jarvis camera.launch NAMESPACE:=sexy_jarvis MACHINE:=$HOSTNAME MACHINE_IP:="127.0.0.1"
+roslaunch sexy_jarvis camera.launch NAMESPACE:=sexy_jarvis MACHINE:=$HOSTNAME PROCESS:=0
 ```
 
 If you get an error about permissions, try adding the current user to the video group.

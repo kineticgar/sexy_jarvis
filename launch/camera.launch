@@ -2,22 +2,29 @@
   <group ns="$(arg NAMESPACE)">
     <group ns="$(arg MACHINE)">
 
+      <!-- Arguments set by the node responsible for launching this file -->
+      <arg name="MACHINE_IP" default="127.0.0.1"/>
+      <arg name="DEVICE" default="/dev/video0"/>
+      <arg name="FPS" default="30/1"/>
+
+      <!-- Control which nodes are launched -->
+      <arg name="DRIVER" default="1"/>
+      <arg name="PROCESS" default="1"/>
+
       <!-- Machine definition -->
       <machine name="$(arg MACHINE)" address="$(arg MACHINE_IP)" env-loader="/opt/ros/jade/env.sh" timeout="15.0"/>
 
       <!-- Run camera node on remote machine -->
-      <!--
-      <node machine="$(arg MACHINE)" pkg="gscam" type="gscam" name="gscam_v4l" output="screen">
+      <node if="$(arg DRIVER)" machine="$(arg MACHINE)" pkg="gscam" type="gscam" name="gscam_v4l" output="screen">
         <param name="camera_name" value="default"/>
         <param name="camera_info_url" value="package://gscam/examples/uncalibrated_parameters.ini"/>
         <param name="gscam_config" value="v4l2src device=$(arg DEVICE) ! video/x-raw-rgb,framerate=$(arg FPS) ! ffmpegcolorspace"/>
         <param name="frame_id" value="/v4l_frame"/>
         <param name="sync_sink" value="true"/>
       </node>
-      -->
 
       <!-- Run image pipeline on this machine -->
-      <group ns="camera">
+      <group if="$(arg PROCESS)" ns="camera">
         <arg name="PACKAGE_DIR" value="$(find motion_tracker)"/>
         <node pkg="motion_tracker" type="background_subtractor" name="background_subtractor" args="$(arg PACKAGE_DIR)" output="screen"/>
       </group>
