@@ -25,8 +25,7 @@
 
       <!-- Run image pipeline on this machine -->
       <group if="$(arg PROCESS)" ns="camera">
-        <arg name="PACKAGE_DIR" value="$(find motion_tracker)"/>
-        <node pkg="motion_tracker" type="background_subtractor" name="background_subtractor" args="$(arg PACKAGE_DIR)" output="screen"/>
+        <node pkg="motion_tracker" type="background_subtractor" name="background_subtractor" output="screen"/>
       </group>
 
     </group>
