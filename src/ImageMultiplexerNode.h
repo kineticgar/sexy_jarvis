@@ -25,12 +25,12 @@
 #include "ImageSubscriber.h"
 
 #include "image_transport/image_transport.h"
+#include "ros/node_handle.h"
 #include "sensor_msgs/Image.h"
 #include "threads/mutex.h"
 
 #include <map>
 #include <memory>
-#include <ros/ros.h>
 #include <string>
 
 class ImageMultiplexerNode : public ImageSubscriberCallback
@@ -61,10 +61,10 @@ private:
   typedef std::string                              ComputerName;
   typedef std::map<ComputerName, TopicMap>         SubscriberMap;
 
-  ImageMultiplexer                m_multiplexer;
-  SubscriberMap                   m_subscribers;
-  image_transport::Publisher      m_publisher;
   ros::NodeHandle                 m_node;
   image_transport::ImageTransport m_transport;
-  PLATFORM::CMutex                m_mutex;
+  image_transport::Publisher      m_publisher;
+  SubscriberMap                   m_subscribers;
+  ImageMultiplexer                m_multiplexer;
+  PLATFORM::CMutex                m_multiplexerMutex;
 };

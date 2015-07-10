@@ -31,9 +31,9 @@ using namespace PLATFORM;
 using namespace XmlRpc;
 
 ImageMultiplexerNode::ImageMultiplexerNode(unsigned int width, unsigned int height) :
-  m_multiplexer(width, height),
   m_node(),
-  m_transport(m_node)
+  m_transport(m_node),
+  m_multiplexer(width, height)
 {
 }
 
@@ -74,14 +74,14 @@ void ImageMultiplexerNode::ReceiveImage(const std::string& strComputer, ImageTop
 
   if (cv_ptr)
   {
-    CLockObject lock(m_mutex);
+    CLockObject lock(m_multiplexerMutex);
     m_multiplexer.AddImage(strComputer, topic, cv_ptr->image);
   }
 }
 
 void ImageMultiplexerNode::PublishImage(void)
 {
-  CLockObject lock(m_mutex);
+  CLockObject lock(m_multiplexerMutex);
   cv_bridge::CvImage image = cv_bridge::CvImage(std_msgs::Header(), "bgr8", m_multiplexer.GetImage());
   m_publisher.publish(image.toImageMsg());
 }
