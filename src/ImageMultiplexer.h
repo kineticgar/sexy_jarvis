@@ -26,6 +26,7 @@
 #include "opencv2/opencv.hpp"
 #include "sensor_msgs/Image.h"
 
+#include <set>
 #include <string>
 
 class ImageMultiplexer
@@ -33,12 +34,26 @@ class ImageMultiplexer
 public:
   ImageMultiplexer(unsigned int width, unsigned int height);
 
-  void AddImage(const std::string& strComputer, ImageTopic topic, const cv::Mat& image);
+  void RegisterComputer(const std::string& strComputer);
+  void UnregisterComputer(const std::string& strComputer);
 
+  void AddImage(const std::string& strComputer, ImageTopic topic, const cv::Mat& image);
   const cv::Mat& GetImage(void) const { return m_image; }
 
 private:
-  unsigned int m_width;
-  unsigned int m_height;
-  cv::Mat      m_image;
+  void GetImageCount(unsigned int& cols, unsigned int& rows) const;
+
+  void GetImageDimensions(unsigned int& width, unsigned int& height) const;
+
+  cv::Mat ResizeImage(const cv::Mat& image, unsigned int width, unsigned int height) const;
+
+  int GetIndex(const std::string& strComputer) const;
+  int GetIndex(ImageTopic topic) const;
+
+  bool GetDestination(const std::string& strComputer, ImageTopic topic, cv::Point& point1, cv::Point& point2) const;
+
+  const unsigned int    m_width;
+  const unsigned int    m_height;
+  cv::Mat               m_image;
+  std::set<std::string> m_computers;
 };
