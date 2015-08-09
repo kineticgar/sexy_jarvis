@@ -1,0 +1,14 @@
+<launch>
+  <group ns="sexy_jarvis">
+    <group ns="netbook">
+      <node pkg="gscam" type="gscam" name="gscam_v4l" output="screen">
+        <param name="camera_name" value="default"/>
+        <param name="camera_info_url" value="package://gscam/examples/uncalibrated_parameters.ini"/>
+        <param name="gscam_config" value="v4l2src device=/dev/video0 ! video/x-raw-rgb,framerate=30/1 ! ffmpegcolorspace"/>
+        <param name="frame_id" value="/v4l_frame"/>
+        <param name="sync_sink" value="true"/>
+      </node>
+    </group>
+  </group>
+</launch>
+
